@@ -15,6 +15,17 @@ spring:
       region:
         static: ${AWS_REGION:ap-south-2}
 
+# AWS Configuration (SQS for event messaging)
+aws:
+  region: ${AWS_REGION:ap-south-2}
+  sqs:
+    # Queue URL for order events (FIFO queue recommended for ordering)
+    # Format: https://sqs.{region}.amazonaws.com/{account-id}/{queue-name}.fifo
+    # Leave empty to disable event publishing
+    queue-url: ${AWS_SQS_QUEUE_URL:}
+    # Queue name for reference
+    queue-name: ${AWS_SQS_QUEUE_NAME:orderms-events.fifo}
+
   # Datasource Configuration
   # Uses secrets from AWS Secrets Manager or environment variables
   # Fallback values for local development

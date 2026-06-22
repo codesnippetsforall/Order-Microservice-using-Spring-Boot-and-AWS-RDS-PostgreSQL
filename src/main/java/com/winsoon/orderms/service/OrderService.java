@@ -2,6 +2,8 @@ package com.winsoon.orderms.service;
 
 import com.winsoon.orderms.dto.OrderDTO;
 import com.winsoon.orderms.entity.Order;
+import com.winsoon.orderms.event.OrderEvent;
+import com.winsoon.orderms.event.OrderEventPublisher;
 import com.winsoon.orderms.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,16 +22,19 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class OrderService {
-    
+
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private OrderEventPublisher eventPublisher;
     
     /**
      * Create a new order
      */
     public OrderDTO createOrder(OrderDTO orderDTO) {
         log.info("Creating new order for customer: {}", orderDTO.getCustomerId());
-        
+
         Order order = Order.builder()
                 .orderNumber(generateOrderNumber())
                 .customerId(orderDTO.getCustomerId())
@@ -37,10 +42,13 @@ public class OrderService {
                 .status(com.winsoon.orderms.entity.OrderStatus.PENDING)
                 .shippingAddress(orderDTO.getShippingAddress())
                 .build();
-        
+
         Order savedOrder = orderRepository.save(order);
         log.info("Order created successfully with ID: {}", savedOrder.getOrderId());
-        
+
+        // Publish ORDER_CREATED event to SQS
+        publishOrderEvent("ORDER_CREATED", savedOrder);
+
         return convertToDTO(savedOrder);
     }
     
@@ -99,14 +107,18 @@ public class OrderService {
      */
     public OrderDTO updateOrderStatus(Long orderId, String status) {
         log.info("Updating order {} status to: {}", orderId, status);
-        
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
-        
+
         order.setStatus(com.winsoon.orderms.entity.OrderStatus.valueOf(status));
         Order updatedOrder = orderRepository.save(order);
-        
+
         log.info("Order status updated successfully");
+
+        // Publish ORDER_STATUS_CHANGED event to SQS
+        publishOrderEvent("ORDER_STATUS_CHANGED", updatedOrder);
+
         return convertToDTO(updatedOrder);
     }
     
@@ -115,13 +127,15 @@ public class OrderService {
      */
     public void deleteOrder(Long orderId) {
         log.info("Deleting order with ID: {}", orderId);
-        
-        if (!orderRepository.existsById(orderId)) {
-            throw new RuntimeException("Order not found with ID: " + orderId);
-        }
-        
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+
         orderRepository.deleteById(orderId);
         log.info("Order deleted successfully");
+
+        // Publish ORDER_DELETED event to SQS
+        publishOrderEvent("ORDER_DELETED", order);
     }
     
     /**
@@ -142,7 +156,34 @@ public class OrderService {
     private String generateOrderNumber() {
         return "ORD-" + System.currentTimeMillis();
     }
-    
+
+    /**
+     * Publish order event to SQS asynchronously
+     */
+    private void publishOrderEvent(String eventType, Order order) {
+        try {
+            OrderEvent event = new OrderEvent(
+                    eventType,
+                    order.getOrderId(),
+                    order.getOrderNumber(),
+                    order.getCustomerId(),
+                    order.getStatus().toString(),
+                    order.getTotalAmount(),
+                    order.getShippingAddress()
+            );
+
+            boolean published = eventPublisher.publishEvent(event);
+            if (published) {
+                log.info("Order event published successfully - Event: {}, Order ID: {}", eventType, order.getOrderId());
+            } else {
+                log.warn("Failed to publish order event - Event: {}, Order ID: {}", eventType, order.getOrderId());
+            }
+        } catch (Exception e) {
+            log.error("Error publishing order event - Event: {}, Order ID: {}, Error: {}",
+                    eventType, order.getOrderId(), e.getMessage());
+        }
+    }
+
     /**
      * Convert Order entity to OrderDTO
      */

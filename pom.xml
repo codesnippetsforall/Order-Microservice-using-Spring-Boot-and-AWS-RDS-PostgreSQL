@@ -123,6 +123,12 @@
             <artifactId>cloudwatch</artifactId>
         </dependency>
 
+        <!-- AWS SQS (for event messaging) -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sqs</artifactId>
+        </dependency>
+
         <!-- Spring Cloud AWS Secrets Manager (3.0.1 - the correct module!) -->
         <dependency>
             <groupId>io.awspring.cloud</groupId>
