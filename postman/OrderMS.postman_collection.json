@@ -1,0 +1,218 @@
+{
+  "info": {
+    "name": "Order Microservice (Winsoon)",
+    "description": "CRUD collection for the Order Microservice. Base URL is configured via the {{ordermsBaseUrl}} collection variable (default http://localhost:8020/api). Covers Customers, Orders and Order Items.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8020/api", "type": "string" },
+    { "key": "customerId", "value": "1", "type": "string" },
+    { "key": "orderId", "value": "1", "type": "string" },
+    { "key": "itemId", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "Create customer",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{ordermsBaseUrl}}/customers", "host": ["{{ordermsBaseUrl}}"], "path": ["customers"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Eve\",\n  \"lastName\": \"Adams\",\n  \"email\": \"eve.adams@example.com\",\n  \"phoneNumber\": \"+1-202-555-0111\",\n  \"address\": \"5 Main St\",\n  \"city\": \"Austin\",\n  \"state\": \"TX\",\n  \"postalCode\": \"73301\",\n  \"country\": \"USA\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get all customers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{ordermsBaseUrl}}/customers", "host": ["{{ordermsBaseUrl}}"], "path": ["customers"] }
+          }
+        },
+        {
+          "name": "Get customer by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{ordermsBaseUrl}}/customers/{{customerId}}", "host": ["{{ordermsBaseUrl}}"], "path": ["customers", "{{customerId}}"] }
+          }
+        },
+        {
+          "name": "Get customer by email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{ordermsBaseUrl}}/customers/email/alice.johnson@example.com", "host": ["{{ordermsBaseUrl}}"], "path": ["customers", "email", "alice.johnson@example.com"] }
+          }
+        },
+        {
+          "name": "Update customer",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{ordermsBaseUrl}}/customers/{{customerId}}", "host": ["{{ordermsBaseUrl}}"], "path": ["customers", "{{customerId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Alice\",\n  \"lastName\": \"Johnson-Updated\",\n  \"phoneNumber\": \"+1-202-555-0143\",\n  \"address\": \"742 Evergreen Terrace\",\n  \"city\": \"Springfield\",\n  \"state\": \"IL\",\n  \"postalCode\": \"62704\",\n  \"country\": \"USA\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete customer",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{ordermsBaseUrl}}/customers/{{customerId}}", "host": ["{{ordermsBaseUrl}}"], "path": ["customers", "{{customerId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Create order",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{ordermsBaseUrl}}/orders", "host": ["{{ordermsBaseUrl}}"], "path": ["orders"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": 1,\n  \"totalAmount\": 149.99,\n  \"shippingAddress\": \"742 Evergreen Terrace, Springfield, IL 62704\"\n}"
+            },
+            "description": "orderNumber and status (PENDING) are assigned server-side; do not send them."
+          }
+        },
+        {
+          "name": "Get all orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{ordermsBaseUrl}}/orders", "host": ["{{ordermsBaseUrl}}"], "path": ["orders"] }
+          }
+        },
+        {
+          "name": "Get order by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{ordermsBaseUrl}}/orders/{{orderId}}", "host": ["{{ordermsBaseUrl}}"], "path": ["orders", "{{orderId}}"] }
+          }
+        },
+        {
+          "name": "Get order by order number",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{ordermsBaseUrl}}/orders/number/ORD-1001", "host": ["{{ordermsBaseUrl}}"], "path": ["orders", "number", "ORD-1001"] }
+          }
+        },
+        {
+          "name": "Get orders by customer id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{ordermsBaseUrl}}/orders/customer/{{customerId}}", "host": ["{{ordermsBaseUrl}}"], "path": ["orders", "customer", "{{customerId}}"] }
+          }
+        },
+        {
+          "name": "Get orders by date range",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/orders/search/date-range?startDate=2026-01-01T00:00:00&endDate=2026-12-31T23:59:59",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["orders", "search", "date-range"],
+              "query": [
+                { "key": "startDate", "value": "2026-01-01T00:00:00" },
+                { "key": "endDate", "value": "2026-12-31T23:59:59" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update order status",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/orders/{{orderId}}/status?status=SHIPPED",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["orders", "{{orderId}}", "status"],
+              "query": [ { "key": "status", "value": "SHIPPED" } ]
+            },
+            "description": "Allowed status values: PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED."
+          }
+        },
+        {
+          "name": "Delete order",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{ordermsBaseUrl}}/orders/{{orderId}}", "host": ["{{ordermsBaseUrl}}"], "path": ["orders", "{{orderId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order Items",
+      "item": [
+        {
+          "name": "Add item to order",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{ordermsBaseUrl}}/orders/{{orderId}}/items", "host": ["{{ordermsBaseUrl}}"], "path": ["orders", "{{orderId}}", "items"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": 5005,\n  \"productName\": \"USB-C Hub\",\n  \"quantity\": 1,\n  \"unitPrice\": 49.99\n}"
+            },
+            "description": "totalPrice is computed server-side (quantity * unitPrice) if omitted."
+          }
+        },
+        {
+          "name": "Get items by order id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{ordermsBaseUrl}}/orders/{{orderId}}/items", "host": ["{{ordermsBaseUrl}}"], "path": ["orders", "{{orderId}}", "items"] }
+          }
+        },
+        {
+          "name": "Get item by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{ordermsBaseUrl}}/orders/{{orderId}}/items/{{itemId}}", "host": ["{{ordermsBaseUrl}}"], "path": ["orders", "{{orderId}}", "items", "{{itemId}}"] }
+          }
+        },
+        {
+          "name": "Update order item",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{ordermsBaseUrl}}/orders/{{orderId}}/items/{{itemId}}", "host": ["{{ordermsBaseUrl}}"], "path": ["orders", "{{orderId}}", "items", "{{itemId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 3,\n  \"unitPrice\": 29.99\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete order item",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{ordermsBaseUrl}}/orders/{{orderId}}/items/{{itemId}}", "host": ["{{ordermsBaseUrl}}"], "path": ["orders", "{{orderId}}", "items", "{{itemId}}"] }
+          }
+        }
+      ]
+    }
+  ]
+}

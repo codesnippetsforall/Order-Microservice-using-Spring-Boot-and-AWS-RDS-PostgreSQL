@@ -1,0 +1,60 @@
+# Maven Files
+target/
+*.class
+*.jar
+*.war
+
+# IDE Files
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build Files
+build/
+dist/
+.gradle/
+
+# Environment Files
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Dependencies
+/dependency-reduced-pom.xml
+
+# Maven Wrapper
+.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+
+# Database Files
+*.db
+*.sqlite
+
+# OS Files
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Node modules (if applicable)
+node_modules/
+npm-debug.log
+
+# Python Files (if applicable)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Backup Files
+*.bak
+*.backup

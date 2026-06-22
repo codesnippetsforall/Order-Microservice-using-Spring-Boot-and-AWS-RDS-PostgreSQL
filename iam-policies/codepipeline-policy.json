@@ -1,0 +1,56 @@
+# AWS CodePipeline Role Policy
+# This policy is needed for the CodePipeline service role
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": "arn:aws:s3:::orderms-artifacts/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codebuild:BatchGetBuilds",
+        "codebuild:BatchGetBuildBatches",
+        "codebuild:BatchGetProjects",
+        "codebuild:ListBuildsForProject"
+      ],
+      "Resource": "arn:aws:codebuild:ap-south-2:ACCOUNT_ID:project/orderms-build-project"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codebuild:StartBuild",
+        "codebuild:StartBuildBatch"
+      ],
+      "Resource": "arn:aws:codebuild:ap-south-2:ACCOUNT_ID:project/orderms-build-project"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codecommit:GetBranch",
+        "codecommit:GetCommit",
+        "codecommit:UploadArchive",
+        "codecommit:CancelUploadArchive"
+      ],
+      "Resource": "arn:aws:codecommit:ap-south-2:ACCOUNT_ID:orderms-repository"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codedeploy:CreateDeployment",
+        "codedeploy:GetApplication",
+        "codedeploy:GetApplicationRevision",
+        "codedeploy:GetDeployment",
+        "codedeploy:GetDeploymentConfig",
+        "codedeploy:RegisterApplicationRevision"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
