@@ -7,7 +7,7 @@ spring:
   # - optional: prefix makes it not fail if Secrets Manager unavailable
   # - Uses environment variables: AWS_REGION, DATABASE_* for local overrides
   config:
-    import: optional:aws-secretsmanager:winsoon/orderms/postgresql
+    import: optional:aws-secretsmanager:winsoon/orderms/postgresql,optional:aws-secretsmanager:winsoon/orderms/sqs
 
   # AWS Configuration (Spring Cloud AWS 3.x)
   cloud:
