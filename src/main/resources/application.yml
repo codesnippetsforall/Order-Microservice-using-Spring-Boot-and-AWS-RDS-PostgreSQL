@@ -57,9 +57,9 @@ aws:
     # Queue URL for order events (FIFO queue recommended for ordering)
     # Format: https://sqs.{region}.amazonaws.com/{account-id}/{queue-name}.fifo
     # Leave empty to disable event publishing
-    queue-url: ${AWS_SQS_QUEUE_URL:}
+    queue-url: ${ORDERMS_AWS_SQS_QUEUE_URL:}
     # Queue name for reference
-    queue-name: ${AWS_SQS_QUEUE_NAME:orderms-events.fifo}
+    queue-name: ${ORDERMS_AWS_SQS_QUEUE_NAME:orderms-events.fifo}
 
 # Server Configuration
 server:
