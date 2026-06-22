@@ -15,24 +15,13 @@ spring:
       region:
         static: ${AWS_REGION:ap-south-2}
 
-# AWS Configuration (SQS for event messaging)
-aws:
-  region: ${AWS_REGION:ap-south-2}
-  sqs:
-    # Queue URL for order events (FIFO queue recommended for ordering)
-    # Format: https://sqs.{region}.amazonaws.com/{account-id}/{queue-name}.fifo
-    # Leave empty to disable event publishing
-    queue-url: ${AWS_SQS_QUEUE_URL:}
-    # Queue name for reference
-    queue-name: ${AWS_SQS_QUEUE_NAME:orderms-events.fifo}
-
   # Datasource Configuration
   # Uses secrets from AWS Secrets Manager or environment variables
   # Fallback values for local development
   datasource:
-    url: jdbc:postgresql://${DATABASE_HOST:orderms-south-2.rds.amazonaws.com}:${DATABASE_PORT:5432}/${DATABASE_NAME:orderms_posgres_db}
+    url: jdbc:postgresql://${DATABASE_HOST:ap-south-2.rds.amazonaws.com}:${DATABASE_PORT:5432}/${DATABASE_NAME:orderms_db}
     username: ${DATABASE_USERNAME:orderms_user}
-    password: ${DATABASE_PASSWORD:orderms_123}
+    password: ${DATABASE_PASSWORD:orderms_user}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -61,9 +50,20 @@ aws:
   flyway:
     enabled: false
 
+# AWS Configuration (SQS for event messaging)
+aws:
+  region: ${AWS_REGION:ap-south-2}
+  #sqs:
+    # Queue URL for order events (FIFO queue recommended for ordering)
+    # Format: https://sqs.{region}.amazonaws.com/{account-id}/{queue-name}.fifo
+    # Leave empty to disable event publishing
+    #queue-url: ${AWS_SQS_QUEUE_URL:}
+    # Queue name for reference
+    #queue-name: ${AWS_SQS_QUEUE_NAME:orderms-events.fifo}
+
 # Server Configuration
 server:
-  port: ${APPLICATION_PORT:8080}
+  port: ${APPLICATION_PORT:8020}
   servlet:
     context-path: /api
   compression:
