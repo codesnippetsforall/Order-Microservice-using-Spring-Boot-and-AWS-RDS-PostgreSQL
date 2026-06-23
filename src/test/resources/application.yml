@@ -18,9 +18,6 @@ spring:
     console:
       enabled: false
 
-  flyway:
-    enabled: false
-
   security:
     oauth2:
       resourceserver:

@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Order Microservice (Winsoon)",
-    "description": "CRUD collection for the Order Microservice.\n\n**Cognito:** Set collection variables (replace XXXX placeholders) from your User Pool — see docs/auth-phase-1-cognito.md.\n\n**Workflow:**\n1. **Phase 1 — Cognito Auth** → set `cognitoPassword` → Get Access Token\n2. **Phase 2 — Resource Server** → verify 401/200\n3. **Customers / Orders / Order Items** → Bearer `{{accessToken}}`",
+    "description": "CRUD collection for the Order Microservice.\n\n**Cognito:** Set collection variables (replace XXXX placeholders) from your User Pool — see docs/auth-phase-1-cognito.md.\n\n**Workflow:**\n1. **Phase 1 — Cognito Auth** → set `cognitoPassword` → Get Access Token\n2. **Phase 2 — Resource Server** → verify 401/200\n3. **Actuator & Monitoring** / **Swagger / OpenAPI** → ops & docs endpoints\n4. **Customers / Orders / Order Items** → Bearer `{{accessToken}}`",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -284,6 +284,305 @@
               "path": ["actuator", "health"]
             },
             "description": "Health check stays public for load balancers and monitoring."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Actuator & Monitoring",
+      "description": "Spring Boot Actuator endpoints (see `application.yml` → `management.endpoints`).\n\n**Public:** `/actuator/health` only (load balancers, deploy script).\n\n**Protected:** `/actuator/metrics`, `/actuator/info` require Bearer token (Phase 2).",
+      "item": [
+        {
+          "name": "GET /actuator/health (public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status UP', () => {",
+                  "    pm.expect(pm.response.json().status).to.eql('UP');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/actuator/health",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "No auth required. Used by EC2 health checks and `redeploy-orderms.sh`."
+          }
+        },
+        {
+          "name": "401 — GET /actuator/metrics without token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Metrics protected (401)', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/actuator/metrics",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["actuator", "metrics"]
+            }
+          }
+        },
+        {
+          "name": "GET /actuator/metrics (with Bearer)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.collectionVariables.get('accessToken')) {",
+                  "    throw new Error('Run Phase 1 → Get Access Token first.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Metric names present', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.names).to.be.an('array').that.is.not.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/actuator/metrics",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["actuator", "metrics"]
+            },
+            "description": "Lists available JVM/HTTP metrics. Try `GET /actuator/metrics/jvm.memory.used` for a single metric."
+          }
+        },
+        {
+          "name": "GET /actuator/metrics/jvm.memory.used (with Bearer)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.collectionVariables.get('accessToken')) {",
+                  "    throw new Error('Run Phase 1 → Get Access Token first.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Metric name', () => {",
+                  "    pm.expect(pm.response.json().name).to.eql('jvm.memory.used');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/actuator/metrics/jvm.memory.used",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["actuator", "metrics", "jvm.memory.used"]
+            }
+          }
+        },
+        {
+          "name": "401 — GET /actuator/info without token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Info protected (401)', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/actuator/info",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["actuator", "info"]
+            }
+          }
+        },
+        {
+          "name": "GET /actuator/info (with Bearer)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.collectionVariables.get('accessToken')) {",
+                  "    throw new Error('Run Phase 1 → Get Access Token first.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/actuator/info",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["actuator", "info"]
+            },
+            "description": "App info endpoint. Returns `{}` unless you add `info.*` properties in `application.yml`."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Swagger / OpenAPI",
+      "description": "API documentation endpoints (springdoc). All are **public** per `SecurityConfig` — no Bearer token needed.\n\n**Browser:** open `{{ordermsBaseUrl}}/swagger-ui.html` for interactive docs.",
+      "item": [
+        {
+          "name": "GET /api-docs (OpenAPI JSON)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('OpenAPI version', () => {",
+                  "    pm.expect(body.openapi).to.be.a('string');",
+                  "});",
+                  "pm.test('Title', () => {",
+                  "    pm.expect(body.info.title).to.eql('Order Microservice API');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/api-docs",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["api-docs"]
+            },
+            "description": "Machine-readable OpenAPI 3 spec. Path configured in `springdoc.api-docs.path`."
+          }
+        },
+        {
+          "name": "GET /v3/api-docs (alternate path)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/v3/api-docs",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["v3", "api-docs"]
+            },
+            "description": "Default springdoc path; also allowed in SecurityConfig."
+          }
+        },
+        {
+          "name": "GET /swagger-ui.html",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 302', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/swagger-ui.html",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["swagger-ui.html"]
+            },
+            "description": "Swagger UI entry page. Best viewed in a browser; Postman may show HTML or redirect."
           }
         }
       ]

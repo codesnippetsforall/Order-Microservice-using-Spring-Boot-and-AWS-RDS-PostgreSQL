@@ -46,10 +46,6 @@ spring:
     show-sql: false
     open-in-view: false
 
-  # Flyway (optional)
-  flyway:
-    enabled: false
-
   # Phase 2 — Cognito JWT validation (OAuth2 Resource Server)
   # COGNITO_ISSUER_URI loaded from Secrets Manager: winsoon/orderms/cognito
   # Local override: export COGNITO_ISSUER_URI=... when not using AWS

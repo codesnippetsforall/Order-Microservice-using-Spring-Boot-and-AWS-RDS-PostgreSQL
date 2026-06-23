@@ -52,12 +52,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Flyway for database migrations (optional but recommended) -->
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-        </dependency>
-
         <!-- Validation -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
