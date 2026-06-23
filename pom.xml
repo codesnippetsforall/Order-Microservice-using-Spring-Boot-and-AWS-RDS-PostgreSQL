@@ -129,6 +129,11 @@
             <artifactId>sqs</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>cognitoidentityprovider</artifactId>
+        </dependency>
+
         <!-- Spring Cloud AWS Secrets Manager (3.0.1 - the correct module!) -->
         <dependency>
             <groupId>io.awspring.cloud</groupId>

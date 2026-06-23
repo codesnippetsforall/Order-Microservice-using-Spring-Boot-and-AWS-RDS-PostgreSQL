@@ -30,6 +30,12 @@ aws:
 
 # Cognito issuer for tests (no AWS Secrets Manager in unit tests)
 COGNITO_ISSUER_URI: https://cognito-idp.ap-south-2.amazonaws.com/ap-south-2_WC7CVQHFC
+COGNITO_USER_POOL_ID: ap-south-2_WC7CVQHFC
+
+orderms:
+  security:
+    cognito:
+      resolve-groups-via-api: false
 
 logging:
   level:

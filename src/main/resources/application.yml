@@ -55,7 +55,13 @@ spring:
         jwt:
           issuer-uri: ${COGNITO_ISSUER_URI}
 
-# AWS Configuration (SQS for event messaging)
+# Phase 3 — map Cognito groups to API access (no Pre Token Lambda required)
+orderms:
+  security:
+    cognito:
+      user-pool-id: ${COGNITO_USER_POOL_ID:ap-south-2_WC7CVQHFC}
+      resolve-groups-via-api: true
+      group-cache-ttl-minutes: 5
 aws:
   region: ${AWS_REGION:ap-south-2}
   sqs:
