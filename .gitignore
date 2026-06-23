@@ -22,6 +22,7 @@ dist/
 deploy/cognito*
 auth-*.md
 cognito*.md
+postman/OrderMS.postman_collection.json
 
 # Environment Files
 .env
