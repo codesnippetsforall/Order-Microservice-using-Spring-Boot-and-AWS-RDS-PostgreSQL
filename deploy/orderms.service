@@ -1,0 +1,36 @@
+[Unit]
+Description=Winsoon OrderMS Spring Boot Microservice
+Documentation=https://github.com/winsoon/orderms
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+
+# App directory on EC2 (adjust if your clone path differs)
+WorkingDirectory=/home/ubuntu/microservice/Order-Microservice-using-Spring-Boot-and-AWS-RDS-PostgreSQL
+
+# AWS + app settings (instance IAM role supplies credentials)
+Environment=AWS_REGION=ap-south-2
+Environment=APPLICATION_PORT=8020
+
+# Recommended: run the packaged JAR (build once with: mvn clean package -DskipTests)
+ExecStart=/usr/bin/java -jar /home/ubuntu/microservice/Order-Microservice-using-Spring-Boot-and-AWS-RDS-PostgreSQL/target/orderms-1.0.0.jar
+
+# Spring Boot exits 143 on SIGTERM (normal shutdown)
+SuccessExitStatus=143
+TimeoutStopSec=30
+KillMode=mixed
+
+# Restart if the JVM crashes (not on normal stop/reboot)
+Restart=on-failure
+RestartSec=15
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=orderms
+
+[Install]
+WantedBy=multi-user.target

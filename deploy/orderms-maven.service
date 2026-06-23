@@ -1,0 +1,31 @@
+[Unit]
+Description=Winsoon OrderMS Spring Boot Microservice (Maven dev mode)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+
+WorkingDirectory=/home/ubuntu/microservice/Order-Microservice-using-Spring-Boot-and-AWS-RDS-PostgreSQL
+
+Environment=AWS_REGION=ap-south-2
+Environment=APPLICATION_PORT=8020
+Environment=JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+
+# Slower startup than JAR; use orderms.service in production when possible
+ExecStart=/usr/bin/mvn spring-boot:run -DskipTests
+
+SuccessExitStatus=143
+TimeoutStopSec=60
+KillMode=mixed
+Restart=on-failure
+RestartSec=30
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=orderms
+
+[Install]
+WantedBy=multi-user.target
