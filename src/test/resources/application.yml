@@ -1,10 +1,13 @@
 spring:
+  config:
+    import: ""
+
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: sa
-    password: 
-    
+    password:
+
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -13,4 +16,25 @@ spring:
 
   h2:
     console:
-      enabled: true
+      enabled: false
+
+  flyway:
+    enabled: false
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${COGNITO_ISSUER_URI}
+
+aws:
+  sqs:
+    queue-url: ""
+
+# Cognito issuer for tests (no AWS Secrets Manager in unit tests)
+COGNITO_ISSUER_URI: https://cognito-idp.ap-south-2.amazonaws.com/ap-south-2_WC7CVQHFC
+
+logging:
+  level:
+    root: WARN
+    com.winsoon: INFO

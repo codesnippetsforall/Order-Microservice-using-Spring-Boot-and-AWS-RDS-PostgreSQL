@@ -1,16 +1,293 @@
 {
   "info": {
     "name": "Order Microservice (Winsoon)",
-    "description": "CRUD collection for the Order Microservice. Base URL is configured via the {{ordermsBaseUrl}} collection variable (default http://localhost:8020/api). Covers Customers, Orders and Order Items.",
+    "description": "CRUD collection for the Order Microservice.\n\n**Cognito:** Set collection variables (replace XXXX placeholders) from your User Pool — see docs/auth-phase-1-cognito.md.\n\n**Workflow:**\n1. **Phase 1 — Cognito Auth** → set `cognitoPassword` → Get Access Token\n2. **Phase 2 — Resource Server** → verify 401/200\n3. **Customers / Orders / Order Items** → Bearer `{{accessToken}}`",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{accessToken}}", "type": "string" }
+    ]
+  },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:8020/api", "type": "string" },
+    { "key": "ordermsBaseUrl", "value": "http://localhost:8020/api", "type": "string" },
+    { "key": "cognitoRegion", "value": "XXXX", "type": "string" },
+    { "key": "cognitoUserPoolId", "value": "XXXX_XXXXXXXXX", "type": "string" },
+    { "key": "cognitoIssuerUri", "value": "https://cognito-idp.XXXX.amazonaws.com/XXXX_XXXXXXXXX", "type": "string" },
+    { "key": "cognitoDomain", "value": "XXXX.auth.XXXX.amazoncognito.com", "type": "string" },
+    { "key": "cognitoClientId", "value": "XXXXXXXXXXXXXXXXXXXXXXXXXX", "type": "string" },
+    { "key": "cognitoUsername", "value": "XXXX@example.com", "type": "string" },
+    { "key": "cognitoPassword", "value": "", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
     { "key": "customerId", "value": "1", "type": "string" },
     { "key": "orderId", "value": "1", "type": "string" },
     { "key": "itemId", "value": "1", "type": "string" }
   ],
   "item": [
+    {
+      "name": "Phase 1 — Cognito Auth",
+      "description": "Obtain Cognito JWT for API calls.\n\n1. Replace XXXX placeholders in collection variables (region, pool id, client id, username).\n2. Set `cognitoPassword` (never commit to git).\n3. Run **Get Access Token** — saves `{{accessToken}}`.\n4. Run **Phase 2 — Resource Server** verification.",
+      "item": [
+        {
+          "name": "OIDC Discovery (verify issuer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Issuer contains user pool id', () => {",
+                  "    pm.expect(body.issuer).to.include(pm.collectionVariables.get('cognitoUserPoolId'));",
+                  "});",
+                  "pm.test('JWKS URI present', () => {",
+                  "    pm.expect(body.jwks_uri).to.be.a('string').and.not.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{cognitoIssuerUri}}/.well-known/openid-configuration",
+              "host": ["{{cognitoIssuerUri}}"],
+              "path": [".well-known", "openid-configuration"]
+            },
+            "description": "Equivalent to CLI: curl issuer/.well-known/openid-configuration\n\nConfirms Cognito User Pool is reachable and Spring can discover JWKS in Phase 2."
+          }
+        },
+        {
+          "name": "Get Access Token (USER_PASSWORD_AUTH)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const password = pm.collectionVariables.get('cognitoPassword');",
+                  "if (!password) {",
+                  "    console.warn('Set cognitoPassword in collection variables before running this request.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "const token = body.AuthenticationResult && body.AuthenticationResult.AccessToken;",
+                  "pm.test('Access token received', () => {",
+                  "    pm.expect(token, 'Check cognitoUsername/cognitoPassword').to.be.a('string').and.not.empty;",
+                  "});",
+                  "if (token) {",
+                  "    pm.collectionVariables.set('accessToken', token);",
+                  "    console.log('Saved accessToken to collection variable (expires in ' + body.AuthenticationResult.ExpiresIn + 's)');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/x-amz-json-1.1" },
+              { "key": "X-Amz-Target", "value": "AWSCognitoIdentityProviderService.InitiateAuth" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"AuthFlow\": \"USER_PASSWORD_AUTH\",\n  \"ClientId\": \"{{cognitoClientId}}\",\n  \"AuthParameters\": {\n    \"USERNAME\": \"{{cognitoUsername}}\",\n    \"PASSWORD\": \"{{cognitoPassword}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "https://cognito-idp.{{cognitoRegion}}.amazonaws.com/",
+              "protocol": "https",
+              "host": ["cognito-idp", "{{cognitoRegion}}", "amazonaws", "com"],
+              "path": [""]
+            },
+            "description": "Equivalent to CLI:\n`aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH ...`\n\nCalls Cognito Identity Provider API directly (same as AWS CLI). Token is stored in `{{accessToken}}`."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Phase 2 — Resource Server",
+      "description": "Verify OrderMS rejects anonymous calls and accepts valid Cognito JWT.\n\n**Prerequisite:** Run **Phase 1 → Get Access Token** first.\n\nRun this folder top-to-bottom with Collection Runner.",
+      "item": [
+        {
+          "name": "401 — GET /orders without token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Phase 2: anonymous request blocked (401)', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/orders",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["orders"]
+            },
+            "description": "No Authorization header. Spring Security must return 401 Unauthorized."
+          }
+        },
+        {
+          "name": "401 — GET /orders with invalid token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Invalid JWT rejected (401)', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer not-a-valid-jwt" }
+            ],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/orders",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["orders"]
+            }
+          }
+        },
+        {
+          "name": "200 — GET /orders with valid Bearer token",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.collectionVariables.get('accessToken')) {",
+                  "    throw new Error('Run Phase 1 → Get Access Token first.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Valid JWT accepted (200)', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/orders",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["orders"]
+            }
+          }
+        },
+        {
+          "name": "200 — GET /customers with valid Bearer token",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.collectionVariables.get('accessToken')) {",
+                  "    throw new Error('Run Phase 1 → Get Access Token first.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Customers endpoint protected and accepts JWT (200)', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/customers",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["customers"]
+            }
+          }
+        },
+        {
+          "name": "200 — GET /actuator/health without token (public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Health endpoint remains public (200)', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Status UP', () => {",
+                  "    pm.expect(pm.response.json().status).to.eql('UP');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ordermsBaseUrl}}/actuator/health",
+              "host": ["{{ordermsBaseUrl}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "Health check stays public for load balancers and monitoring."
+          }
+        }
+      ]
+    },
     {
       "name": "Customers",
       "item": [

@@ -19,6 +19,9 @@ target/
 build/
 dist/
 .gradle/
+deploy/cognito*
+auth-*.md
+cognito*.md
 
 # Environment Files
 .env

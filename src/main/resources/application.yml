@@ -7,7 +7,7 @@ spring:
   # - optional: prefix makes it not fail if Secrets Manager unavailable
   # - Uses environment variables: AWS_REGION, DATABASE_* for local overrides
   config:
-    import: optional:aws-secretsmanager:winsoon/orderms/postgresql,optional:aws-secretsmanager:winsoon/orderms/sqs
+    import: optional:aws-secretsmanager:winsoon/orderms/postgresql,optional:aws-secretsmanager:winsoon/orderms/sqs,optional:aws-secretsmanager:winsoon/orderms/cognito
 
   # AWS Configuration (Spring Cloud AWS 3.x)
   cloud:
@@ -49,6 +49,15 @@ spring:
   # Flyway (optional)
   flyway:
     enabled: false
+
+  # Phase 2 — Cognito JWT validation (OAuth2 Resource Server)
+  # COGNITO_ISSUER_URI loaded from Secrets Manager: winsoon/orderms/cognito
+  # Local override: export COGNITO_ISSUER_URI=... when not using AWS
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${COGNITO_ISSUER_URI}
 
 # AWS Configuration (SQS for event messaging)
 aws:
