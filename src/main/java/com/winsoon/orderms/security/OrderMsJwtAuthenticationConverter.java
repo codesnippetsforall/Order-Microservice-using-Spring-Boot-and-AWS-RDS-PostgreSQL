@@ -15,7 +15,8 @@ import java.util.List;
 
 /**
  * Builds Spring authorities from JWT {@code scope} claim and Cognito {@code cognito:groups}.
- * If groups are missing from the token, loads them from Cognito User Pool API (see {@link CognitoGroupService}).
+ * Groups/scopes are injected at login by the Cognito Pre Token Lambda (see deploy/setup-pretoken-lambda.sh).
+ * Falls back to {@link CognitoGroupService} only when {@code resolve-groups-via-api} is enabled.
  */
 @Component
 public class OrderMsJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {

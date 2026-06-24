@@ -1,0 +1,20 @@
+{
+  "version": "2",
+  "triggerSource": "TokenGeneration_Authentication",
+  "region": "ap-south-2",
+  "userPoolId": "<USER_POOL_ID>",
+  "userName": "test-user",
+  "request": {
+    "userAttributes": {
+      "sub": "test-sub",
+      "email": "test@example.com"
+    },
+    "groupConfiguration": {
+      "groupsToOverride": ["ADMIN"],
+      "iamRolesToOverride": [],
+      "preferredRole": null
+    },
+    "scopes": []
+  },
+  "response": {}
+}

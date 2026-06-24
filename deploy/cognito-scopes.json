@@ -1,0 +1,5 @@
+[
+  {"ScopeName": "read", "ScopeDescription": "Read orders and customers"},
+  {"ScopeName": "write", "ScopeDescription": "Create and update orders"},
+  {"ScopeName": "admin", "ScopeDescription": "Delete orders and full access"}
+]

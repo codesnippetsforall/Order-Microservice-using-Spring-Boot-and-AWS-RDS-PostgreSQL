@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Phase 3 — Cognito group membership drives API access (no Lambda required).
+ * Phase 3 — Cognito group membership drives API access (groups from JWT cognito:groups claim).
  */
 @SpringBootTest
 @AutoConfigureMockMvc

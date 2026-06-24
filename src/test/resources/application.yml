@@ -28,7 +28,7 @@ aws:
   sqs:
     queue-url: ""
 
-# Cognito issuer for tests (no AWS Secrets Manager in unit tests)
+# Cognito issuer for tests (public pool identifier — no Secrets Manager in unit tests)
 COGNITO_ISSUER_URI: https://cognito-idp.ap-south-2.amazonaws.com/ap-south-2_WC7CVQHFC
 COGNITO_USER_POOL_ID: ap-south-2_WC7CVQHFC
 

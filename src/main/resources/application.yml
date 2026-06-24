@@ -15,13 +15,12 @@ spring:
       region:
         static: ${AWS_REGION:ap-south-2}
 
-  # Datasource Configuration
-  # Uses secrets from AWS Secrets Manager or environment variables
-  # Fallback values for local development
+  # Datasource — values from AWS Secrets Manager (winsoon/orderms/postgresql) on EC2.
+  # Local dev: export DATABASE_HOST, DATABASE_USERNAME, DATABASE_PASSWORD.
   datasource:
-    url: jdbc:postgresql://${DATABASE_HOST:ap-south-2.rds.amazonaws.com}:${DATABASE_PORT:5432}/${DATABASE_NAME:orderms_db}
-    username: ${DATABASE_USERNAME:orderms_user}
-    password: ${DATABASE_PASSWORD:orderms_user}
+    url: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT:5432}/${DATABASE_NAME:orderms_db}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -55,12 +54,13 @@ spring:
         jwt:
           issuer-uri: ${COGNITO_ISSUER_URI}
 
-# Phase 3 — map Cognito groups to API access (no Pre Token Lambda required)
+# Phase 3 — Cognito groups/scopes in access token via Pre Token Lambda (deploy/setup-pretoken-lambda.sh)
 orderms:
   security:
     cognito:
-      user-pool-id: ${COGNITO_USER_POOL_ID:ap-south-2_WC7CVQHFC}
-      resolve-groups-via-api: true
+      user-pool-id: ${COGNITO_USER_POOL_ID}
+      # Groups come from cognito:groups claim in JWT; no runtime Cognito API calls in production
+      resolve-groups-via-api: false
       group-cache-ttl-minutes: 5
 aws:
   region: ${AWS_REGION:ap-south-2}

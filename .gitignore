@@ -19,7 +19,6 @@ target/
 build/
 dist/
 .gradle/
-deploy/cognito*
 auth-*.md
 cognito*.md
 postman/OrderMS.postman_collection.json
@@ -30,6 +29,12 @@ postman/OrderMS.postman_collection.json
 .env.*.local
 .claude/
 .claude/*
+
+# Cognito / deploy secrets (values live in AWS Secrets Manager: winsoon/orderms/cognito)
+deploy/cognito-secret.json
+deploy/cognito-dev.env
+deploy/cognito-pretoken/update-user-pool.json
+deploy/cognito-pretoken/lambda-output.json
 
 # Logs
 logs/
