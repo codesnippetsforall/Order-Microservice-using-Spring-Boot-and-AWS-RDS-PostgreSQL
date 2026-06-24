@@ -24,6 +24,9 @@ spring:
         jwt:
           issuer-uri: ${COGNITO_ISSUER_URI}
 
+  cache:
+    type: simple
+
 aws:
   sqs:
     queue-url: ""
@@ -36,6 +39,11 @@ orderms:
   security:
     cognito:
       resolve-groups-via-api: false
+
+management:
+  health:
+    redis:
+      enabled: false
 
 logging:
   level:

@@ -35,6 +35,7 @@ deploy/cognito-secret.json
 deploy/cognito-dev.env
 deploy/cognito-pretoken/update-user-pool.json
 deploy/cognito-pretoken/lambda-output.json
+deploy/redis-secret.json
 
 # Logs
 logs/

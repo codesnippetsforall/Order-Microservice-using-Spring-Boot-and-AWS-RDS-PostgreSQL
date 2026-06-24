@@ -1,5 +1,6 @@
 package com.winsoon.orderms.service;
 
+import com.winsoon.orderms.config.CacheNames;
 import com.winsoon.orderms.dto.OrderDTO;
 import com.winsoon.orderms.entity.Order;
 import com.winsoon.orderms.event.OrderEvent;
@@ -7,6 +8,8 @@ import com.winsoon.orderms.event.OrderEventPublisher;
 import com.winsoon.orderms.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +35,7 @@ public class OrderService {
     /**
      * Create a new order
      */
+    @CacheEvict(cacheNames = CacheNames.ORDERS, allEntries = true)
     public OrderDTO createOrder(OrderDTO orderDTO) {
         log.info("Creating new order for customer: {}", orderDTO.getCustomerId());
 
@@ -56,6 +60,7 @@ public class OrderService {
      * Get order by ID
      */
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = CacheNames.ORDERS, key = "#orderId")
     public OrderDTO getOrderById(Long orderId) {
         log.info("Fetching order with ID: {}", orderId);
         
@@ -69,6 +74,7 @@ public class OrderService {
      * Get order by order number
      */
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = CacheNames.ORDERS, key = "'number:' + #orderNumber")
     public OrderDTO getOrderByNumber(String orderNumber) {
         log.info("Fetching order with number: {}", orderNumber);
         
@@ -82,6 +88,7 @@ public class OrderService {
      * Get all orders by customer ID
      */
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = CacheNames.ORDERS, key = "'customer:' + #customerId")
     public List<OrderDTO> getOrdersByCustomerId(Long customerId) {
         log.info("Fetching orders for customer ID: {}", customerId);
         
@@ -94,6 +101,7 @@ public class OrderService {
      * Get all orders
      */
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = CacheNames.ORDERS, key = "'all'")
     public List<OrderDTO> getAllOrders() {
         log.info("Fetching all orders");
         
@@ -105,6 +113,7 @@ public class OrderService {
     /**
      * Update order status
      */
+    @CacheEvict(cacheNames = CacheNames.ORDERS, allEntries = true)
     public OrderDTO updateOrderStatus(Long orderId, String status) {
         log.info("Updating order {} status to: {}", orderId, status);
 
@@ -125,6 +134,7 @@ public class OrderService {
     /**
      * Delete order
      */
+    @CacheEvict(cacheNames = CacheNames.ORDERS, allEntries = true)
     public void deleteOrder(Long orderId) {
         log.info("Deleting order with ID: {}", orderId);
 

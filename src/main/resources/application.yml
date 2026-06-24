@@ -2,12 +2,17 @@ spring:
   application:
     name: orderms
 
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
   # Load AWS Secrets Manager (if available)
   # This uses Spring Cloud AWS 3.x approach
   # - optional: prefix makes it not fail if Secrets Manager unavailable
   # - Uses environment variables: AWS_REGION, DATABASE_* for local overrides
   config:
-    import: optional:aws-secretsmanager:winsoon/orderms/postgresql,optional:aws-secretsmanager:winsoon/orderms/sqs,optional:aws-secretsmanager:winsoon/orderms/cognito
+    import: optional:aws-secretsmanager:winsoon/orderms/postgresql,optional:aws-secretsmanager:winsoon/orderms/sqs,optional:aws-secretsmanager:winsoon/orderms/cognito,optional:aws-secretsmanager:winsoon/orderms/redis
 
   # AWS Configuration (Spring Cloud AWS 3.x)
   cloud:
@@ -62,6 +67,9 @@ orderms:
       # Groups come from cognito:groups claim in JWT; no runtime Cognito API calls in production
       resolve-groups-via-api: false
       group-cache-ttl-minutes: 5
+  cache:
+    redis:
+      ttl-seconds: ${REDIS_CACHE_TTL_SECONDS:300}
 aws:
   region: ${AWS_REGION:ap-south-2}
   sqs:
